@@ -1,0 +1,20 @@
+struct Todo {
+    id       int     [optional]
+    content  string
+    order    int
+    done     bool
+}
+
+interface TodoService {
+    // returns Todo with given id
+    readTodo(id int) Todo
+
+    // creates new Todo and returns it with an id
+    createTodo(todo Todo) Todo
+
+    // updates Todo and returns it
+    updateTodo(todo Todo) Todo
+
+    // deletes Todo. returns true if delete succeeded. if no Todo found, returns false
+    deleteTodo(todo Todo) bool
+}
