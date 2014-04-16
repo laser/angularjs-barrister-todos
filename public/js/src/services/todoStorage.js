@@ -4,18 +4,21 @@
  * Services that persists and retrieves TODOs from localStorage
  */
 angular.module('todomvc')
-  .factory('todoStorage', function ($resource) {
+  .factory('TodoResource', function ($resource) {
     'use strict';
 
-    var STORAGE_ID = 'todos-angularjs';
-
-    return {
-      get: function () {
-        return JSON.parse(localStorage.getItem(STORAGE_ID) || '[]');
-      },
-
-      put: function (todos) {
-        localStorage.setItem(STORAGE_ID, JSON.stringify(todos));
+    return $resource('todos/:todoId', {
+      todoId: '@id'
+    }, {
+      update: {
+        method: 'PUT',
+        query: {
+          method: 'GET',
+          params: {
+            todoId: 'todos'
+          },
+          isArray: true
+        }
       }
-    };
+    });
   });

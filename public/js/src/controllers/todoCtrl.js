@@ -6,21 +6,17 @@
  * - exposes the model to the template and provides event handlers
  */
 angular.module('todomvc')
-.controller('TodoCtrl', function TodoCtrl($scope, $routeParams, $filter, todoStorage) {
+.controller('TodoCtrl', function TodoCtrl($scope, $routeParams, $filter, TodoResource) {
   'use strict';
 
-  var todos = $scope.todos = todoStorage.get();
-
+  $scope.todos = TodoResource.query();
   $scope.newTodo = '';
   $scope.editedTodo = null;
 
   $scope.$watch('todos', function (newValue, oldValue) {
-    $scope.remainingCount = $filter('filter')(todos, { completed: false }).length;
-    $scope.completedCount = todos.length - $scope.remainingCount;
+    $scope.remainingCount = $filter('filter')($scope.todos, { completed: false }).length;
+    $scope.completedCount = $scope.todos.length - $scope.remainingCount;
     $scope.allChecked = !$scope.remainingCount;
-    if (newValue !== oldValue) { // This prevents unneeded calls to the local storage
-      todoStorage.put(todos);
-    }
   }, true);
 
   // Monitor the current route for changes and adjust the filter accordingly.
@@ -33,15 +29,18 @@ angular.module('todomvc')
   });
 
   $scope.addTodo = function () {
-    var newTodo = $scope.newTodo.trim();
-    if (!newTodo.length) {
+    var newTodoTitle = $scope.newTodo.trim();
+    if (!newTodoTitle.length) {
       return;
     }
 
-    todos.push({
-      title: newTodo,
+    var newTodo = new TodoResource({
+      title: newTodoTitle,
       completed: false
     });
+
+    newTodo.$save();
+    $scope.todos.unshift(newTodo);
 
     $scope.newTodo = '';
   };
@@ -59,26 +58,42 @@ angular.module('todomvc')
     if (!todo.title) {
       $scope.removeTodo(todo);
     }
+    else {
+      todo.$update();
+    }
   };
 
   $scope.revertEditing = function (todo) {
-    todos[todos.indexOf(todo)] = $scope.originalTodo;
+    $scope.todos[$scope.todos.indexOf(todo)] = $scope.originalTodo;
     $scope.doneEditing($scope.originalTodo);
   };
 
   $scope.removeTodo = function (todo) {
-    todos.splice(todos.indexOf(todo), 1);
+    todo.$remove();
+    $scope.todos.splice($scope.todos.indexOf(todo), 1);
+  };
+
+  $scope.toggleCompleted = function (todo) {
+    todo.completed = !todo.completed;
+    todo.$update();
   };
 
   $scope.clearCompletedTodos = function () {
-    $scope.todos = todos = todos.filter(function (val) {
-      return !val.completed;
+    var remainingTodos = [];
+    angular.forEach($scope.todos, function (todo) {
+      if (todo.completed) {
+        todo.$remove();
+      } else {
+        remainingTodos.push(todo);
+      }
     });
+    $scope.todos = remainingTodos;
   };
 
   $scope.markAll = function (completed) {
-    todos.forEach(function (todo) {
+    $scope.todos.forEach(function (todo) {
       todo.completed = !completed;
+      todo.$update();
     });
   };
 });
