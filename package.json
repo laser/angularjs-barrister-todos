@@ -6,6 +6,7 @@
     "start": "node app.js"
   },
   "dependencies": {
+    "barrister": "*",
     "express": "3.1.1"
   }
 }

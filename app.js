@@ -4,12 +4,15 @@
  */
 
 var express = require('express')
+  , fs = require('fs')
   , http = require('http')
   , path = require('path')
-  , store = require("./store").store;
+  , barrister = require('barrister')
+  , store = require("./store").store
+  , service = require("./service").service(store)
+  , idl = JSON.parse(fs.readFileSync("./interface.json").toString());
 
 var app = express();
-
 
 // all environments
 app.set('port', process.env.PORT || 3000);
@@ -24,7 +27,10 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-require('./routes/todos')(app, store)
+var server = new barrister.Server(idl);
+server.addHandler('TodoService', service)
+
+require('./routes/todos')(app, server);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
