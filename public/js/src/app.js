@@ -1,12 +1,21 @@
-/*global $ */
-/*jshint unused:false */
-var app = app || {};
-var ENTER_KEY = 13;
-var ESC_KEY = 27;
+/*global angular */
 
-$(function () {
-	'use strict';
+/**
+ * The main TodoMVC app module
+ *
+ * @type {angular.Module}
+ */
+angular.module('todomvc', ['ngRoute'])
+	.config(function ($routeProvider) {
+		'use strict';
 
-	// kick things off by creating the `App`
-	new app.AppView();
-});
+		$routeProvider.when('/', {
+			controller: 'TodoCtrl',
+			templateUrl: 'todomvc-index.html'
+		}).when('/:status', {
+			controller: 'TodoCtrl',
+			templateUrl: 'todomvc-index.html'
+		}).otherwise({
+			redirectTo: '/'
+		});
+	});
