@@ -6,10 +6,15 @@
  * - exposes the model to the template and provides event handlers
  */
 angular.module('todomvc')
-.controller('TodoCtrl', function TodoCtrl($scope, $routeParams, $filter, TodoResource) {
+.controller('TodoCtrl', function TodoCtrl($scope, $routeParams, $filter, RPC) {
   'use strict';
 
-  $scope.todos = TodoResource.query();
+  $scope.todos = [];
+  setTimeout(function() {
+    RPC.TodoService.readTodos().success(function(todos) {
+      $scope.todos = todos;
+    });
+  }, 2000);
   $scope.newTodo = '';
   $scope.editedTodo = null;
 
@@ -34,15 +39,16 @@ angular.module('todomvc')
       return;
     }
 
-    var newTodo = new TodoResource({
+    RPC.TodoService.createTodo({
       title: newTodoTitle,
       completed: false
+    }).success(function(todo) {
+      $scope.todos.unshift(todo);
+      $scope.newTodo = '';
+    }).error(function(err) {
+      alert(err);
+      throw err;
     });
-
-    newTodo.$save();
-    $scope.todos.unshift(newTodo);
-
-    $scope.newTodo = '';
   };
 
   $scope.editTodo = function (todo) {

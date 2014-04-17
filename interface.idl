@@ -1,8 +1,8 @@
 struct Todo {
-    id       int     [optional]
-    content  string
-    order    int
-    done     bool
+    id        int    [optional]
+    title     string
+    completed bool
+    order     int    [optional]
 }
 
 interface TodoService {
